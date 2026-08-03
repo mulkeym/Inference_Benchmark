@@ -1,5 +1,16 @@
 # Simplified Inference Benchmark Implementation Plan
 
+> **Budget refinement amendment:** Explicit TTFT/E2E budgets override the generic
+> flattening and 5× latency guards. Continue while configured budgets hold; after the
+> first crossing, measure one arithmetic midpoint between the crossing and preceding
+> concurrency, then compute a budget-constrained sweet spot. Plot both p95 TTFT and p95
+> E2E for streaming endpoints. This amendment supersedes older snippets below that refer
+> to stopping only after a budget reaches 2×.
+>
+> **Prompt analysis amendment:** Finished test pages also derive prompt-by-concurrency
+> heatmaps and per-prompt tables from the stored request rows. Raw prompt and response
+> text remain unstored; CSV retains full per-request precision.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build the simplified inference benchmark from `docs/superpowers/specs/2026-08-02-inference-benchmark-simplified-design.md`: one auto concurrency sweep that finds the sweet spot between concurrency, tokens/sec, and latency.
@@ -12,7 +23,10 @@
 
 - Spec is authoritative: `docs/superpowers/specs/2026-08-02-inference-benchmark-simplified-design.md`.
 - Sweep steps double: 1, 2, 4, … up to ceiling (default **128**). Step dwell: ≥ **45 s** AND ≥ **20** completed requests (defaults; configurable). Warmup: **3** discarded sequential requests.
-- Early stop rules (spec §3.2): throughput gain < **10%** for **2** consecutive steps; step error rate > **10%**; p95 latency > **5×** concurrency-1 baseline; any set budget exceeded **2×**; ceiling reached; user stop.
+- Early stop rules (spec §3.2): error rate > **10%** always stops. Without explicit
+  budgets, throughput gain < **10%** for **2** consecutive steps or p95 latency > **5×**
+  baseline stops. With explicit budgets, continue while they hold, then run one midpoint
+  refinement after the first crossing. Ceiling and user stop always apply.
 - Verdict requires ≥ **3** completed steps and no `client_saturated` flag; budget line interpolates linearly, never extrapolates (spec §3.4).
 - Non-streaming endpoints: TTFT is NULL everywhere; all TTFT-based logic falls back to E2E.
 - API keys: encrypted at rest (Fernet), write-only through the API, never in exports or logs.
@@ -3977,8 +3991,6 @@ git commit -m "feat: container build, compose, e2e script, README"
 | §9 testing strategy | 8 (mock), unit tests throughout, 9 (integration), 16 (Playwright), 17 (container e2e) |
 | §10 container/repo layout | 1, 17 |
 | §11 acceptance criteria | 9 (AC2), 4+15 (AC3), 7 (AC4), 11 (AC5), 12+17 (AC6), 16+17 (AC1, AC7) |
-
-
 
 
 

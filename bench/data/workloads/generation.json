@@ -1,0 +1,126 @@
+{
+ "preset": "generation",
+ "version": "2.0.0",
+ "prompts": [
+  {
+   "id": "generation-00",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of marriage in the nineteenth century. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 84
+  },
+  {
+   "id": "generation-01",
+   "text": "Write a very long, richly detailed story about country estates. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 66
+  },
+  {
+   "id": "generation-02",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of letter writing. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 79
+  },
+  {
+   "id": "generation-03",
+   "text": "Write a very long, richly detailed story about inheritance law. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 66
+  },
+  {
+   "id": "generation-04",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of village society. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 79
+  },
+  {
+   "id": "generation-05",
+   "text": "Write a very long, richly detailed story about carriage travel. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 66
+  },
+  {
+   "id": "generation-06",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of social visits. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 79
+  },
+  {
+   "id": "generation-07",
+   "text": "Write a very long, richly detailed story about reputation. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 65
+  },
+  {
+   "id": "generation-08",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of courtship rituals. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 80
+  },
+  {
+   "id": "generation-09",
+   "text": "Write a very long, richly detailed story about family fortunes. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 66
+  },
+  {
+   "id": "generation-10",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of marriage in the nineteenth century. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 84
+  },
+  {
+   "id": "generation-11",
+   "text": "Write a very long, richly detailed story about country estates. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 66
+  },
+  {
+   "id": "generation-12",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of letter writing. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 79
+  },
+  {
+   "id": "generation-13",
+   "text": "Write a very long, richly detailed story about inheritance law. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 66
+  },
+  {
+   "id": "generation-14",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of village society. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 79
+  },
+  {
+   "id": "generation-15",
+   "text": "Write a very long, richly detailed story about carriage travel. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 66
+  },
+  {
+   "id": "generation-16",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of social visits. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 79
+  },
+  {
+   "id": "generation-17",
+   "text": "Write a very long, richly detailed story about reputation. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 65
+  },
+  {
+   "id": "generation-18",
+   "text": "Write an exhaustive, thoroughly detailed essay about the economics of courtship rituals. Cover its history, its participants, its costs, its incentives, its failures, and its future. Continue until you have covered at least twelve distinct aspects, with several sentences on each; do not summarize and do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 80
+  },
+  {
+   "id": "generation-19",
+   "text": "Write a very long, richly detailed story about family fortunes. Include many scenes, several characters with distinct voices, extended dialogue, and full descriptions of every location. Keep writing until the story has at least ten separate scenes; do not stop early.",
+   "max_tokens": 1024,
+   "expected_prompt_tokens": 66
+  }
+ ]
+}
