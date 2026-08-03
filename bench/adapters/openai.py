@@ -14,10 +14,10 @@ class OpenAIAdapter:
         self.streaming = streaming
         self._api_style = "chat"
         hostname = (httpx.URL(self.base_url).host or "").lower()
-        is_azure = ("openai.azure." in hostname or
-                    "services.ai.azure." in hostname or
-                    "cognitiveservices.azure." in hostname)
-        if api_key and is_azure:
+        self._is_azure = ("openai.azure." in hostname or
+                          "services.ai.azure." in hostname or
+                          "cognitiveservices.azure." in hostname)
+        if api_key and self._is_azure:
             headers = {"api-key": api_key}
         elif api_key:
             headers = {"Authorization": f"Bearer {api_key}"}
@@ -89,12 +89,21 @@ class OpenAIAdapter:
 
     async def _execute_responses(self, text, model, max_tokens, temperature,
                                  wall, started) -> RequestResult:
-        body = {"model": model, "input": text, "max_output_tokens": max_tokens,
-                "temperature": temperature}
+        output_limit = max(max_tokens, 16) if self._is_azure else max_tokens
+        body = {"model": model, "input": text, "max_output_tokens": output_limit}
+        if self._is_azure:
+            body["store"] = False
+        if not (self._is_azure and self._uses_default_temperature(model)):
+            body["temperature"] = temperature
         if self.streaming:
             body["stream"] = True
             return await self._execute_responses_stream(body, text, wall, started)
         return await self._execute_responses_plain(body, text, wall, started)
+
+    @staticmethod
+    def _uses_default_temperature(model: str) -> bool:
+        name = model.lower()
+        return name.startswith(("gpt-5", "o1", "o3", "o4"))
 
     async def _execute_chat_stream(self, body, text, wall, started) -> RequestResult:
         first = None
@@ -146,6 +155,7 @@ class OpenAIAdapter:
         first = None
         chunks: list[str] = []
         usage = None
+        stream_error = None
         async with self._client.stream(
                 "POST", f"{self.base_url}/responses", json=body) as response:
             if response.status_code >= 300:
@@ -159,6 +169,10 @@ class OpenAIAdapter:
                     continue
                 event = json.loads(payload)
                 event_type = event.get("type")
+                if event_type in ("error", "response.failed"):
+                    error = event.get("error") or (event.get("response") or {}).get("error") or event
+                    stream_error = json.dumps(error, ensure_ascii=False)[:2000]
+                    break
                 if event_type == "response.output_text.delta":
                     delta = event.get("delta")
                     if delta:
@@ -167,6 +181,9 @@ class OpenAIAdapter:
                 if event_type in ("response.completed", "response.incomplete"):
                     usage = (event.get("response") or {}).get("usage") or usage
         finished = time.perf_counter()
+        if stream_error:
+            return RequestResult("", wall, None, None, None, None, False, "http",
+                                 f"Responses stream error: {stream_error}")
         output = "".join(chunks)
         prompt_tokens, output_tokens = self._response_usage(usage)
         return RequestResult(

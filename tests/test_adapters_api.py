@@ -44,11 +44,13 @@ async def test_openai_probe_uses_configured_model_not_first_discovered_model():
         if request.url.path.endswith("/models"):
             return httpx.Response(200, json={"data": [{"id": "catalog-model"}]})
         body = json.loads(request.content)
-        assert body["model"] == "azure-deployment"
+        assert body["model"] == "gpt-5.1"
         if request.url.path.endswith("/chat/completions"):
             assert body["max_tokens"] == 16
             return httpx.Response(404, json={"error": "not supported"})
         assert body["max_output_tokens"] == 16
+        assert body["store"] is False
+        assert "temperature" not in body
         return httpx.Response(200, json={
             "output_text": "OK",
             "usage": {"input_tokens": 3, "output_tokens": 1},
@@ -57,7 +59,7 @@ async def test_openai_probe_uses_configured_model_not_first_discovered_model():
     adapter = OpenAIAdapter("https://resource.openai.azure.com/openai/v1",
                             "secret", True, 5, False,
                             transport=httpx.MockTransport(handler))
-    result = await adapter.probe("azure-deployment")
+    result = await adapter.probe("gpt-5.1")
     await adapter.aclose()
 
     assert result["auth_ok"] is True
@@ -78,6 +80,42 @@ async def test_openai_http_error_detail_is_not_cut_off_at_200_characters():
 
     assert result.error_class == "http"
     assert "useful ending" in result.error_detail
+
+
+async def test_azure_responses_enforces_minimum_output_tokens():
+    async def handler(request):
+        if request.url.path.endswith("/chat/completions"):
+            return httpx.Response(404)
+        body = json.loads(request.content)
+        assert body["max_output_tokens"] == 16
+        return httpx.Response(200, json={"output_text": "OK"})
+
+    adapter = OpenAIAdapter("https://resource.openai.azure.com/openai/v1",
+                            "secret", True, 5, False,
+                            transport=httpx.MockTransport(handler))
+    result = await adapter.execute("hello", "gpt-5.1", 1, 0)
+    await adapter.aclose()
+
+    assert result.ok
+
+
+async def test_responses_stream_reports_error_event():
+    async def handler(request):
+        if request.url.path.endswith("/chat/completions"):
+            return httpx.Response(404)
+        event = {"type": "response.failed", "response": {
+            "error": {"code": "server_error", "message": "generation failed"}
+        }}
+        return httpx.Response(200, text=f"data: {json.dumps(event)}\n\n",
+                              headers={"content-type": "text/event-stream"})
+
+    adapter = OpenAIAdapter("http://mock/v1", None, True, 5, True,
+                            transport=httpx.MockTransport(handler))
+    result = await adapter.execute("hello", "model", 20, 0)
+    await adapter.aclose()
+
+    assert result.error_class == "http"
+    assert "generation failed" in result.error_detail
 
 
 async def test_openai_plain_falls_back_to_responses_and_remembers_api():
