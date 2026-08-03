@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import pytest
 
@@ -18,6 +20,63 @@ async def test_adapters_against_mock():
     result = await asksage.execute("hi","mock-model",10,0)
     assert result.ok and result.ttft_ms is None and result.tokens_estimated
     await asksage.aclose()
+
+
+async def test_openai_plain_falls_back_to_responses_and_remembers_api():
+    paths = []
+
+    async def handler(request):
+        paths.append(request.url.path)
+        if request.url.path == "/v1/chat/completions":
+            return httpx.Response(404, json={"error": "not supported"})
+        body = json.loads(request.content)
+        assert body == {"model": "responses-model", "input": "hello",
+                        "max_output_tokens": 20, "temperature": 0.25}
+        return httpx.Response(200, json={
+            "output": [{"type": "message", "role": "assistant", "content": [
+                {"type": "output_text", "text": "hello back"}
+            ]}],
+            "usage": {"input_tokens": 3, "output_tokens": 2, "total_tokens": 5},
+        })
+
+    adapter = OpenAIAdapter("http://mock/v1", None, True, 5, False,
+                            transport=httpx.MockTransport(handler))
+    first = await adapter.execute("hello", "responses-model", 20, 0.25)
+    second = await adapter.execute("hello", "responses-model", 20, 0.25)
+    await adapter.aclose()
+
+    assert first.ok and first.prompt_tokens == 3 and first.output_tokens == 2
+    assert second.ok
+    assert paths == ["/v1/chat/completions", "/v1/responses", "/v1/responses"]
+
+
+async def test_openai_streaming_falls_back_to_responses_events():
+    async def handler(request):
+        if request.url.path == "/v1/chat/completions":
+            return httpx.Response(405, json={"error": "not supported"})
+        body = json.loads(request.content)
+        assert body["input"] == "hello" and body["stream"] is True
+        events = [
+            {"type": "response.created", "response": {"id": "resp_1"}},
+            {"type": "response.output_text.delta", "delta": "hello "},
+            {"type": "response.output_text.delta", "delta": "back"},
+            {"type": "response.completed", "response": {
+                "usage": {"input_tokens": 3, "output_tokens": 2, "total_tokens": 5}
+            }},
+        ]
+        content = "".join(
+            f"event: {event['type']}\ndata: {json.dumps(event)}\n\n" for event in events)
+        return httpx.Response(200, text=content,
+                              headers={"content-type": "text/event-stream"})
+
+    adapter = OpenAIAdapter("http://mock/v1", None, True, 5, True,
+                            transport=httpx.MockTransport(handler))
+    result = await adapter.execute("hello", "responses-model", 20, 0)
+    await adapter.aclose()
+
+    assert result.ok and result.ttft_ms is not None
+    assert result.prompt_tokens == 3 and result.output_tokens == 2
+    assert result.tokens_estimated is False
 
 
 @pytest.fixture
