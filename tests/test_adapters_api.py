@@ -22,6 +22,23 @@ async def test_adapters_against_mock():
     await asksage.aclose()
 
 
+@pytest.mark.parametrize(("base_url", "expected_header", "absent_header"), [
+    ("https://zwppgcai-openai.azure.ie/openai/v1", "api-key", "authorization"),
+    ("https://openai.example/v1", "authorization", "api-key"),
+])
+async def test_openai_uses_provider_auth_header(base_url, expected_header,
+                                                absent_header):
+    async def handler(request):
+        assert request.headers[expected_header] in ("secret", "Bearer secret")
+        assert absent_header not in request.headers
+        return httpx.Response(200, json={"data": [{"id": "model"}]})
+
+    adapter = OpenAIAdapter(base_url, "secret", True, 5, False,
+                            transport=httpx.MockTransport(handler))
+    assert await adapter.list_models() == ["model"]
+    await adapter.aclose()
+
+
 async def test_openai_plain_falls_back_to_responses_and_remembers_api():
     paths = []
 

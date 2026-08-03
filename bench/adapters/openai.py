@@ -13,7 +13,16 @@ class OpenAIAdapter:
         self.base_url = base_url.rstrip("/")
         self.streaming = streaming
         self._api_style = "chat"
-        headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+        hostname = (httpx.URL(self.base_url).host or "").lower()
+        is_azure = ("openai.azure." in hostname or
+                    "services.ai.azure." in hostname or
+                    "cognitiveservices.azure." in hostname)
+        if api_key and is_azure:
+            headers = {"api-key": api_key}
+        elif api_key:
+            headers = {"Authorization": f"Bearer {api_key}"}
+        else:
+            headers = {}
         self._client = httpx.AsyncClient(headers=headers, verify=verify_tls,
                                          timeout=timeout_s, transport=transport)
 
