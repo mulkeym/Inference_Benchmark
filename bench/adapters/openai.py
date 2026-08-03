@@ -48,7 +48,7 @@ class OpenAIAdapter:
                     return result
             result["reachable"] = True
             probe_model = model or (result["models"][0] if result["models"] else "default")
-            request = await self.execute("Say OK.", probe_model, 1, 0.0)
+            request = await self.execute("Say OK.", probe_model, 16, 0.0)
             result["latency_ms"] = round((time.perf_counter() - start) * 1000, 1)
             if request.ok:
                 result["auth_ok"] = True
@@ -211,4 +211,4 @@ class OpenAIAdapter:
     @staticmethod
     def _http_error(response, wall) -> RequestResult:
         return RequestResult("", wall, None, None, None, None, False, "http",
-                             f"HTTP {response.status_code}: {response.text[:200]}")
+                             f"HTTP {response.status_code}: {response.text[:2000]}")

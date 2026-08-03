@@ -46,7 +46,9 @@ async def test_openai_probe_uses_configured_model_not_first_discovered_model():
         body = json.loads(request.content)
         assert body["model"] == "azure-deployment"
         if request.url.path.endswith("/chat/completions"):
+            assert body["max_tokens"] == 16
             return httpx.Response(404, json={"error": "not supported"})
+        assert body["max_output_tokens"] == 16
         return httpx.Response(200, json={
             "output_text": "OK",
             "usage": {"input_tokens": 3, "output_tokens": 1},
@@ -59,6 +61,23 @@ async def test_openai_probe_uses_configured_model_not_first_discovered_model():
     await adapter.aclose()
 
     assert result["auth_ok"] is True
+
+
+async def test_openai_http_error_detail_is_not_cut_off_at_200_characters():
+    detail = "x" * 500 + " useful ending"
+
+    async def handler(request):
+        if request.url.path.endswith("/chat/completions"):
+            return httpx.Response(404, json={"error": "not supported"})
+        return httpx.Response(400, json={"error": {"message": detail}})
+
+    adapter = OpenAIAdapter("http://mock/v1", None, True, 5, False,
+                            transport=httpx.MockTransport(handler))
+    result = await adapter.execute("hello", "model", 20, 0)
+    await adapter.aclose()
+
+    assert result.error_class == "http"
+    assert "useful ending" in result.error_detail
 
 
 async def test_openai_plain_falls_back_to_responses_and_remembers_api():
