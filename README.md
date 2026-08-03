@@ -1,9 +1,17 @@
 # Inference Benchmark
 
+[![CI](https://github.com/mulkeym/Inference_Benchmark/actions/workflows/ci.yml/badge.svg)](https://github.com/mulkeym/Inference_Benchmark/actions/workflows/ci.yml)
+
 Finds the sweet spot between concurrency, throughput (tokens/sec), and latency
 for an LLM inference endpoint (OpenAI-compatible or AskSage).
 
 ## Run
+
+Pull the pre-built image published by CI on every push to `main`:
+
+    docker run -p 8080:8080 -v bench-data:/data ghcr.io/mulkeym/inference_benchmark:latest
+
+Or build it locally:
 
     docker build -t inference-benchmark .
     docker run -p 8080:8080 -v bench-data:/data inference-benchmark
