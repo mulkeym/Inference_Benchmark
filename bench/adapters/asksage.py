@@ -26,13 +26,14 @@ class AskSageAdapter:
         except Exception:
             return []
 
-    async def probe(self) -> dict:
+    async def probe(self, model: str | None = None) -> dict:
         result = {"reachable": False, "auth_ok": False, "models": [],
                   "supports_streaming": False, "latency_ms": None, "error": None}
         started = time.perf_counter()
         try:
             result["models"] = await self.list_models()
-            request = await self.execute("Say OK.", result["models"][0] if result["models"] else "gpt-4o", 1, 0.0)
+            probe_model = model or (result["models"][0] if result["models"] else "gpt-4o")
+            request = await self.execute("Say OK.", probe_model, 1, 0.0)
             result["latency_ms"] = round((time.perf_counter() - started) * 1000, 1)
             result["reachable"] = True
             if request.ok:

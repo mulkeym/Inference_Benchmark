@@ -131,7 +131,7 @@ async def probe_endpoint(request: Request, endpoint_id: int):
     adapter = make_adapter(endpoint["type"], endpoint["base_url"], api_key,
                            bool(endpoint["verify_tls"]), 15.0, True)
     try:
-        result = await adapter.probe()
+        result = await adapter.probe(endpoint.get("default_model"))
     finally:
         await adapter.aclose()
     db.update_endpoint(state.db_conn, endpoint_id,

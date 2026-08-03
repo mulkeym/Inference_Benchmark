@@ -39,6 +39,28 @@ async def test_openai_uses_provider_auth_header(base_url, expected_header,
     await adapter.aclose()
 
 
+async def test_openai_probe_uses_configured_model_not_first_discovered_model():
+    async def handler(request):
+        if request.url.path.endswith("/models"):
+            return httpx.Response(200, json={"data": [{"id": "catalog-model"}]})
+        body = json.loads(request.content)
+        assert body["model"] == "azure-deployment"
+        if request.url.path.endswith("/chat/completions"):
+            return httpx.Response(404, json={"error": "not supported"})
+        return httpx.Response(200, json={
+            "output_text": "OK",
+            "usage": {"input_tokens": 3, "output_tokens": 1},
+        })
+
+    adapter = OpenAIAdapter("https://resource.openai.azure.com/openai/v1",
+                            "secret", True, 5, False,
+                            transport=httpx.MockTransport(handler))
+    result = await adapter.probe("azure-deployment")
+    await adapter.aclose()
+
+    assert result["auth_ok"] is True
+
+
 async def test_openai_plain_falls_back_to_responses_and_remembers_api():
     paths = []
 
